@@ -2,6 +2,10 @@
 
 这是一个基于 Google Gemini AI 的 Neuro-sama 聊天机器人项目。它模拟了 Neuro-sama 的个性特征，可以进行有趣的对话交互。
 
+## 效果展示
+
+![Neuro-sama 对话效果](https://github.com/Devinkang666666/neurosama_gemini/raw/master/images/demo.png)
+
 ## 功能特点
 
 - 使用 Google Gemini 1.5 Pro 模型
