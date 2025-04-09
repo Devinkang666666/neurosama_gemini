@@ -3,12 +3,13 @@ import google.generativeai as genai
 import sys
 from dotenv import load_dotenv
 
-# Load API key from .env file
+# 从 .env 文件加载 API key
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-if not API_KEY:
-    print("Error: GEMINI_API_KEY not found in .env file.")
+if not API_KEY or API_KEY == "your_gemini_api_key_here":
+    print("错误: 请在 .env 文件中设置您的 GEMINI_API_KEY")
+    print("提示: 打开 .env 文件，将 'your_gemini_api_key_here' 替换为您的 Gemini API Key")
     sys.exit(1)
 
 # Configure Gemini client
