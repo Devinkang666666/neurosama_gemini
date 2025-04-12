@@ -15,6 +15,9 @@ This is a Neuro-sama chatbot project based on Google Gemini AI. It simulates Neu
 - 使用 Google Gemini 2.0 Flash 模型 | Uses Google Gemini 2.0 Flash model
 - 模拟秒神酱的个性特征 | Simulates Neuro-sama's personality
 - 支持中文对话 | Supports Chinese conversation
+- 支持语音输入和输出 | Supports voice input and output
+- 可爱的语音合成 | Cute voice synthesis
+- 自动语言检测 | Automatic language detection
 - 简单易用的命令行界面 | Simple and user-friendly CLI interface
 - 美观的Web聊天界面 | Beautiful Web chat interface
 - 自动打开浏览器 | Automatically opens browser

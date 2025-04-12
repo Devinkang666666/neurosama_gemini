@@ -34,7 +34,8 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>神经酱 Gemini | Neuro-sama Chat (模拟版)</title>
+    <title>秒神酱 Gemini | Neuro-sama Chat (模拟版)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -121,13 +122,18 @@ HTML_TEMPLATE = """
             outline: none;
         }
 
+        .chat-buttons {
+            display: flex;
+            margin-left: 5px;
+        }
+
         .chat-input button {
             background-color: #6200ee;
             color: white;
             border: none;
             border-radius: 20px;
-            padding: 10px 20px;
-            margin-left: 10px;
+            padding: 10px 15px;
+            margin-left: 5px;
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s;
@@ -135,6 +141,42 @@ HTML_TEMPLATE = """
 
         .chat-input button:hover {
             background-color: #5000d6;
+        }
+
+        .chat-input button:disabled {
+            background-color: #9e9e9e;
+            cursor: not-allowed;
+        }
+
+        #voice-input-button {
+            background-color: #4caf50;
+        }
+
+        #voice-input-button:hover {
+            background-color: #388e3c;
+        }
+
+        #voice-input-button.recording {
+            background-color: #f44336;
+            animation: pulse 1.5s infinite;
+        }
+
+        #voice-output-toggle {
+            background-color: #2196f3;
+        }
+
+        #voice-output-toggle:hover {
+            background-color: #1976d2;
+        }
+
+        #voice-output-toggle.voice-disabled {
+            background-color: #9e9e9e;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         .typing-indicator {
@@ -233,7 +275,11 @@ HTML_TEMPLATE = """
 
             <div class="chat-input">
                 <input type="text" id="user-input" placeholder="在这里输入消息..." autocomplete="off">
-                <button id="send-button">发送</button>
+                <div class="chat-buttons">
+                    <button id="voice-input-button" title="语音输入"><i class="fas fa-microphone"></i></button>
+                    <button id="send-button">发送</button>
+                    <button id="voice-output-toggle" title="语音输出" class="voice-enabled"><i class="fas fa-volume-up"></i></button>
+                </div>
             </div>
         </div>
 
@@ -247,6 +293,65 @@ HTML_TEMPLATE = """
             const sendButton = document.getElementById('send-button');
             const errorMessage = document.getElementById('error-message');
             const typingIndicator = document.getElementById('typing-indicator');
+            const voiceInputButton = document.getElementById('voice-input-button');
+            const voiceOutputToggle = document.getElementById('voice-output-toggle');
+
+            // 语音识别相关变量
+            let recognition = null;
+            let isRecording = false;
+
+            // 语音合成相关变量
+            let speechSynthesis = window.speechSynthesis;
+            let voiceOutputEnabled = true;
+            let voices = [];
+
+            // 初始化语音合成
+            function initSpeechSynthesis() {
+                if (speechSynthesis) {
+                    // Chrome需要等待onvoiceschanged事件
+                    speechSynthesis.onvoiceschanged = function() {
+                        voices = speechSynthesis.getVoices();
+                    };
+
+                    // 首次加载获取可用语音
+                    voices = speechSynthesis.getVoices();
+                }
+            }
+
+            // 初始化语音合成
+            initSpeechSynthesis();
+
+            // 检查浏览器是否支持语音识别
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                // 根据浏览器语言设置语音识别语言
+                const isChineseLanguage = /^zh/.test(navigator.language);
+                recognition.lang = isChineseLanguage ? 'zh-CN' : 'en-US';
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    userInput.value = transcript;
+                    stopRecording();
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error', event.error);
+                    stopRecording();
+                    errorMessage.textContent = '语音识别出错，请再试一次。';
+                    errorMessage.style.display = 'block';
+                };
+
+                recognition.onend = function() {
+                    stopRecording();
+                };
+            } else {
+                voiceInputButton.style.display = 'none';
+                console.warn('Browser does not support speech recognition.');
+            }
 
             // Focus on input when page loads
             userInput.focus();
@@ -260,6 +365,61 @@ HTML_TEMPLATE = """
                     sendMessage();
                 }
             });
+
+            // 语音输入按钮点击事件
+            if (voiceInputButton) {
+                voiceInputButton.addEventListener('click', function() {
+                    if (isRecording) {
+                        stopRecording();
+                    } else {
+                        startRecording();
+                    }
+                });
+            }
+
+            // 语音输出开关点击事件
+            voiceOutputToggle.addEventListener('click', function() {
+                voiceOutputEnabled = !voiceOutputEnabled;
+                if (voiceOutputEnabled) {
+                    voiceOutputToggle.classList.remove('voice-disabled');
+                    voiceOutputToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+                } else {
+                    voiceOutputToggle.classList.add('voice-disabled');
+                    voiceOutputToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    // 停止正在进行的语音输出
+                    speechSynthesis.cancel();
+                }
+            });
+
+            // 开始语音输入
+            function startRecording() {
+                if (!recognition) return;
+
+                try {
+                    recognition.start();
+                    isRecording = true;
+                    voiceInputButton.classList.add('recording');
+                    voiceInputButton.innerHTML = '<i class="fas fa-stop"></i>';
+                    errorMessage.style.display = 'none';
+                } catch (error) {
+                    console.error('Error starting speech recognition:', error);
+                }
+            }
+
+            // 停止语音输入
+            function stopRecording() {
+                if (!recognition) return;
+
+                try {
+                    recognition.stop();
+                } catch (error) {
+                    console.error('Error stopping speech recognition:', error);
+                }
+
+                isRecording = false;
+                voiceInputButton.classList.remove('recording');
+                voiceInputButton.innerHTML = '<i class="fas fa-microphone"></i>';
+            }
 
             function sendMessage() {
                 const message = userInput.value.trim();
@@ -302,6 +462,11 @@ HTML_TEMPLATE = """
                     } else {
                         // Add bot message
                         addMessage(data.message, 'bot');
+
+                        // 语音输出机器人的回复
+                        if (voiceOutputEnabled && speechSynthesis) {
+                            speakText(data.message);
+                        }
                     }
 
                     // Re-enable input and button
@@ -341,6 +506,54 @@ HTML_TEMPLATE = """
 
                 // Scroll to bottom
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // 语音合成函数
+            function speakText(text) {
+                if (!speechSynthesis) return;
+
+                // 停止正在进行的语音输出
+                speechSynthesis.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(text);
+
+                // 设置语音参数
+                utterance.volume = 1.0;  // 0 到 1
+                utterance.rate = 1.0;    // 0.1 到 10
+                utterance.pitch = 1.2;   // 0 到 2, 高一点的音调更可爱
+
+                // 使用初始化时获取的voices变量
+                // 如果还没有加载完成，再次尝试获取
+                if (voices.length === 0) {
+                    const availableVoices = speechSynthesis.getVoices();
+                    if (availableVoices.length > 0) {
+                        voices = availableVoices;
+                    }
+                }
+
+                // 检测语言
+                const isChineseText = /[\u4e00-\u9fa5]/.test(text);
+
+                if (isChineseText) {
+                    // 中文文本，选择中文女声
+                    const chineseVoice = voices.find(voice =>
+                        voice.lang.includes('zh') && voice.name.includes('Female'));
+                    if (chineseVoice) {
+                        utterance.voice = chineseVoice;
+                    }
+                    utterance.lang = 'zh-CN';
+                } else {
+                    // 英文文本，选择英文女声
+                    const englishVoice = voices.find(voice =>
+                        voice.lang.includes('en') && voice.name.includes('Female'));
+                    if (englishVoice) {
+                        utterance.voice = englishVoice;
+                    }
+                    utterance.lang = 'en-US';
+                }
+
+                // 开始语音合成
+                speechSynthesis.speak(utterance);
             }
         });
     </script>
