@@ -514,12 +514,13 @@ HTML_TEMPLATE = """
                 // 停止正在进行的语音输出
                 speechSynthesis.cancel();
 
+                // 处理文本，增加情感表达
+                text = addEmotionToText(text);
+
                 const utterance = new SpeechSynthesisUtterance(text);
 
-                // 设置语音参数
-                utterance.volume = 1.0;  // 0 到 1
-                utterance.rate = 1.0;    // 0.1 到 10
-                utterance.pitch = 1.2;   // 0 到 2, 高一点的音调更可爱
+                // 检测语言
+                const isChineseText = /[\u4e00-\u9fa5]/.test(text);
 
                 // 使用初始化时获取的voices变量
                 // 如果还没有加载完成，再次尝试获取
@@ -530,29 +531,142 @@ HTML_TEMPLATE = """
                     }
                 }
 
-                // 检测语言
-                const isChineseText = /[\u4e00-\u9fa5]/.test(text);
+                // 输出可用的语音列表，便于调试
+                console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
 
                 if (isChineseText) {
-                    // 中文文本，选择中文女声
-                    const chineseVoice = voices.find(voice =>
-                        voice.lang.includes('zh') && voice.name.includes('Female'));
+                    // 中文文本处理
+                    // 尝试找到最适合的中文女声
+                    let chineseVoice = voices.find(voice =>
+                        (voice.lang === 'zh-CN' || voice.lang === 'zh_CN') &&
+                        (voice.name.includes('Female') || voice.name.includes('女') ||
+                         voice.name.includes('Xiaoxiao') || voice.name.includes('Yaoyao') ||
+                         voice.name.includes('Huihui')));
+
+                    // 如果没有找到精确匹配，尝试寻找包含'zh'的任何女声
+                    if (!chineseVoice) {
+                        chineseVoice = voices.find(voice =>
+                            voice.lang.includes('zh') &&
+                            (voice.name.includes('Female') || voice.name.includes('女')));
+                    }
+
+                    // 如果还是没有找到，尝试任何中文语音
+                    if (!chineseVoice) {
+                        chineseVoice = voices.find(voice => voice.lang.includes('zh'));
+                    }
+
                     if (chineseVoice) {
                         utterance.voice = chineseVoice;
+                        console.log('Using voice:', chineseVoice.name, chineseVoice.lang);
+                    } else {
+                        console.warn('No suitable Chinese voice found');
                     }
+
                     utterance.lang = 'zh-CN';
+
+                    // 中文语音参数调整
+                    utterance.volume = 1.0;   // 音量最大
+                    utterance.rate = 0.9;     // 说话速度稍慢，更自然
+                    utterance.pitch = 1.3;    // 高一点的音调更可爱
                 } else {
-                    // 英文文本，选择英文女声
-                    const englishVoice = voices.find(voice =>
-                        voice.lang.includes('en') && voice.name.includes('Female'));
+                    // 英文文本处理
+                    // 尝试找到最适合的英文女声
+                    let englishVoice = voices.find(voice =>
+                        (voice.lang === 'en-US' || voice.lang === 'en_US') &&
+                        (voice.name.includes('Female') || voice.name.includes('Samantha') ||
+                         voice.name.includes('Zira') || voice.name.includes('Hazel') ||
+                         voice.name.includes('Siri')));
+
+                    // 如果没有找到精确匹配，尝试寻找包含'en'的任何女声
+                    if (!englishVoice) {
+                        englishVoice = voices.find(voice =>
+                            voice.lang.includes('en') &&
+                            (voice.name.includes('Female') || voice.name.includes('female')));
+                    }
+
+                    // 如果还是没有找到，尝试任何英文语音
+                    if (!englishVoice) {
+                        englishVoice = voices.find(voice => voice.lang.includes('en'));
+                    }
+
                     if (englishVoice) {
                         utterance.voice = englishVoice;
+                        console.log('Using voice:', englishVoice.name, englishVoice.lang);
+                    } else {
+                        console.warn('No suitable English voice found');
                     }
+
                     utterance.lang = 'en-US';
+
+                    // 英文语音参数调整
+                    utterance.volume = 1.0;   // 音量最大
+                    utterance.rate = 0.95;    // 说话速度稍慢，更自然
+                    utterance.pitch = 1.2;    // 高一点的音调更可爱
                 }
+
+                // 添加语音事件处理
+                utterance.onstart = function(event) {
+                    console.log('Speech started');
+                };
+
+                utterance.onerror = function(event) {
+                    console.error('Speech error:', event.error);
+                };
+
+                utterance.onend = function(event) {
+                    console.log('Speech ended');
+                };
 
                 // 开始语音合成
                 speechSynthesis.speak(utterance);
+            }
+
+            // 增加文本情感表达
+            function addEmotionToText(text) {
+                // 检测是否为中文
+                const isChineseText = /[\u4e00-\u9fa5]/.test(text);
+
+                if (isChineseText) {
+                    // 为中文添加语气词和停顿
+                    text = text.replace(/\!+/g, '! <break time="0.3s"/>');
+                    text = text.replace(/\?+/g, '? <break time="0.3s"/>');
+                    text = text.replace(/\~+/g, '~ <break time="0.2s"/>');
+                    text = text.replace(/\.\.\./g, '... <break time="0.5s"/>');
+
+                    // 添加情感标记
+                    text = text.replace(/\*\^\u25bd\^\*/g, '<emphasis level="strong">哈哈哈</emphasis> <break time="0.2s"/>');
+                    text = text.replace(/\(\*\^\u25bd\^\*\)/g, '<emphasis level="strong">哈哈哈</emphasis> <break time="0.2s"/>');
+
+                    // 在句子结尾添加停顿
+                    text = text.replace(/([\u4e00-\u9fa5])\s*([\u3002\uff01\uff1f])/g, '$1$2 <break time="0.4s"/>');
+
+                    // 在逗号处添加短停顿
+                    text = text.replace(/([\u4e00-\u9fa5])\s*([\uff0c\u3001])/g, '$1$2 <break time="0.2s"/>');
+
+                    // 将文本包裹在SSML标记中
+                    text = `<speak>${text}</speak>`;
+                } else {
+                    // 为英文添加语气词和停顿
+                    text = text.replace(/\!+/g, '! <break time="0.3s"/>');
+                    text = text.replace(/\?+/g, '? <break time="0.3s"/>');
+                    text = text.replace(/\~+/g, '~ <break time="0.2s"/>');
+                    text = text.replace(/\.\.\./g, '... <break time="0.5s"/>');
+
+                    // 添加情感标记
+                    text = text.replace(/haha/gi, '<emphasis level="strong">haha</emphasis> <break time="0.2s"/>');
+                    text = text.replace(/lol/gi, '<emphasis level="strong">lol</emphasis> <break time="0.2s"/>');
+
+                    // 在句子结尾添加停顿
+                    text = text.replace(/([a-zA-Z])\s*([.!?])/g, '$1$2 <break time="0.4s"/>');
+
+                    // 在逗号处添加短停顿
+                    text = text.replace(/([a-zA-Z])\s*,/g, '$1, <break time="0.2s"/>');
+
+                    // 将文本包裹在SSML标记中
+                    text = `<speak>${text}</speak>`;
+                }
+
+                return text;
             }
         });
     </script>
