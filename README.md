@@ -1,17 +1,19 @@
-# Neuro-sama Gemini | 神经酱 Gemini
+# Neuro-sama Gemini | 秒神酱 Gemini
 
-这是一个基于 Google Gemini AI 的 Neuro-sama 聊天机器人项目。它模拟了 Neuro-sama 的个性特征，可以进行有趣的对话交互。
+这是一个基于 Google Gemini AI 的秒神酱聊天机器人项目。它模拟了秒神酱的个性特征，可以进行有趣的对话交互。
 
 This is a Neuro-sama chatbot project based on Google Gemini AI. It simulates Neuro-sama's personality traits and enables engaging conversations.
 
 ## 效果展示 | Demo
 
-![Neuro-sama 对话效果 | Neuro-sama Chat Demo](https://github.com/Devinkang666666/neurosama_gemini/raw/master/images/demo.png)
+![秒神酱对话效果 | Neuro-sama Chat Demo](https://github.com/Devinkang666666/neurosama_gemini/raw/master/images/demo.png)
+
+![秒神酱 Web界面 | Neuro-sama Web UI](https://github.com/Devinkang666666/neurosama_gemini/raw/master/images/web_ui.png)
 
 ## 功能特点 | Features
 
-- 使用 Google Gemini 1.5 Pro 模型 | Uses Google Gemini 1.5 Pro model
-- 模拟 Neuro-sama 的个性特征 | Simulates Neuro-sama's personality
+- 使用 Google Gemini 2.0 Flash 模型 | Uses Google Gemini 2.0 Flash model
+- 模拟秒神酱的个性特征 | Simulates Neuro-sama's personality
 - 支持中文对话 | Supports Chinese conversation
 - 简单易用的命令行界面 | Simple and user-friendly CLI interface
 - 美观的Web聊天界面 | Beautiful Web chat interface

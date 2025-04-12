@@ -12,7 +12,7 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 
 # 模拟回复列表
 MOCK_RESPONSES = [
-    "你好呀！我是神经酱！很高兴认识你！(*^▽^*)",
+    "你好呀！我是秒神酱！很高兴认识你！(*^▽^*)",
     "哎呀，这个问题有点难回答呢...让我想想...",
     "啊哈哈！这真的很有趣！我喜欢和你聊天！",
     "嗯...这个嘛...我不太确定，但我觉得应该是这样的！",
@@ -43,75 +43,75 @@ HTML_TEMPLATE = """
             background-color: #f5f5f5;
             color: #333;
         }
-        
+
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .header {
             text-align: center;
             margin-bottom: 20px;
         }
-        
+
         .header h1 {
             color: #6200ee;
             margin-bottom: 10px;
         }
-        
+
         .chat-container {
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
-        
+
         .chat-messages {
             height: 400px;
             overflow-y: auto;
             padding: 20px;
         }
-        
+
         .message {
             margin-bottom: 15px;
             max-width: 80%;
             clear: both;
         }
-        
+
         .user-message {
             float: right;
         }
-        
+
         .bot-message {
             float: left;
         }
-        
+
         .message-content {
             padding: 10px 15px;
             border-radius: 18px;
             display: inline-block;
             word-break: break-word;
         }
-        
+
         .user-message .message-content {
             background-color: #6200ee;
             color: white;
             border-top-right-radius: 5px;
         }
-        
+
         .bot-message .message-content {
             background-color: #e0e0e0;
             color: black;
             border-top-left-radius: 5px;
         }
-        
+
         .chat-input {
             display: flex;
             padding: 10px;
             border-top: 1px solid #eee;
         }
-        
+
         .chat-input input {
             flex: 1;
             padding: 10px 15px;
@@ -120,7 +120,7 @@ HTML_TEMPLATE = """
             font-size: 16px;
             outline: none;
         }
-        
+
         .chat-input button {
             background-color: #6200ee;
             color: white;
@@ -132,11 +132,11 @@ HTML_TEMPLATE = """
             font-size: 16px;
             transition: background-color 0.3s;
         }
-        
+
         .chat-input button:hover {
             background-color: #5000d6;
         }
-        
+
         .typing-indicator {
             display: none;
             padding: 10px 15px;
@@ -147,7 +147,7 @@ HTML_TEMPLATE = """
             float: left;
             clear: both;
         }
-        
+
         .typing-indicator span {
             height: 8px;
             width: 8px;
@@ -159,32 +159,32 @@ HTML_TEMPLATE = """
             opacity: 0.4;
             animation: typing 1s infinite;
         }
-        
+
         .typing-indicator span:nth-of-type(1) {
             animation-delay: 0s;
         }
-        
+
         .typing-indicator span:nth-of-type(2) {
             animation-delay: 0.2s;
         }
-        
+
         .typing-indicator span:nth-of-type(3) {
             animation-delay: 0.4s;
         }
-        
+
         @keyframes typing {
             0% { opacity: 0.4; }
             50% { opacity: 1; }
             100% { opacity: 0.4; }
         }
-        
+
         .error {
             color: #d32f2f;
             text-align: center;
             margin-top: 10px;
             display: none;
         }
-        
+
         .notice {
             background-color: #fff3cd;
             color: #856404;
@@ -193,13 +193,13 @@ HTML_TEMPLATE = """
             margin-bottom: 20px;
             text-align: center;
         }
-        
+
         /* 响应式设计 */
         @media (max-width: 600px) {
             .container {
                 padding: 10px;
             }
-            
+
             .message {
                 max-width: 90%;
             }
@@ -209,19 +209,19 @@ HTML_TEMPLATE = """
 <body>
     <div class="container">
         <div class="header">
-            <h1>神经酱 Gemini | Neuro-sama Chat</h1>
-            <p>与神经酱聊天吧！她是一个古怪而有时不可预测的AI主播。</p>
+            <h1>秒神酱 Gemini | Neuro-sama Chat</h1>
+            <p>与秒神酱聊天吧！她是一个古怪而有时不可预测的AI主播。</p>
         </div>
-        
+
         <div class="notice">
-            <strong>注意：</strong> 当前使用模拟回复模式，神经酱的回复是预设的，不是实时生成的。
+            <strong>注意：</strong> 当前使用模拟回复模式，秒神酱的回复是预设的，不是实时生成的。
         </div>
-        
+
         <div class="chat-container">
             <div class="chat-messages" id="chat-messages">
                 <div class="message bot-message">
                     <div class="message-content">
-                        你好呀！我是神经酱！今天想聊些什么呢？(*^▽^*)
+                        你好呀！我是秒神酱！今天想聊些什么呢？(*^▽^*)
                     </div>
                 </div>
                 <div class="typing-indicator" id="typing-indicator">
@@ -230,13 +230,13 @@ HTML_TEMPLATE = """
                     <span></span>
                 </div>
             </div>
-            
+
             <div class="chat-input">
                 <input type="text" id="user-input" placeholder="在这里输入消息..." autocomplete="off">
                 <button id="send-button">发送</button>
             </div>
         </div>
-        
+
         <div class="error" id="error-message"></div>
     </div>
 
@@ -294,7 +294,7 @@ HTML_TEMPLATE = """
                 .then(data => {
                     // Hide typing indicator
                     typingIndicator.style.display = 'none';
-                    
+
                     if (data.error) {
                         // Show error message
                         errorMessage.textContent = data.message;
@@ -303,7 +303,7 @@ HTML_TEMPLATE = """
                         // Add bot message
                         addMessage(data.message, 'bot');
                     }
-                    
+
                     // Re-enable input and button
                     userInput.disabled = false;
                     sendButton.disabled = false;
@@ -312,16 +312,16 @@ HTML_TEMPLATE = """
                 .catch(error => {
                     // Hide typing indicator
                     typingIndicator.style.display = 'none';
-                    
+
                     // Show error message
                     errorMessage.textContent = '连接服务器时出错，请稍后再试。';
                     errorMessage.style.display = 'block';
-                    
+
                     // Re-enable input and button
                     userInput.disabled = false;
                     sendButton.disabled = false;
                     userInput.focus();
-                    
+
                     console.error('Error:', error);
                 });
             }
@@ -368,10 +368,10 @@ def chat():
     try:
         # 模拟思考时间
         time.sleep(1)
-        
+
         # 随机选择一个回复
         response = random.choice(MOCK_RESPONSES)
-        
+
         return jsonify({
             'error': False,
             'message': response
@@ -388,23 +388,23 @@ def open_browser_after_delay(url, delay=1.0):
         time.sleep(delay)
         print(f"\n正在打开浏览器: {url}")
         webbrowser.open(url)
-    
+
     # 在后台线程中打开浏览器
     threading.Thread(target=_open_browser, daemon=True).start()
 
 def start_server(host='127.0.0.1', port=5000, debug=False, open_browser=True):
     """启动Flask服务器"""
     url = f"http://{host}:{port}"
-    
+
     print("\n神经酱 Gemini Web聊天界面 (模拟版)")
     print("============================")
     print(f"服务器地址: {url}")
     print("按 Ctrl+C 停止服务器")
-    
+
     # 延迟打开浏览器，确保服务器已经启动
     if open_browser:
         open_browser_after_delay(url)
-    
+
     # 启动服务器
     app.run(host=host, port=port, debug=debug)
 
@@ -417,6 +417,6 @@ if __name__ == "__main__":
         print(f"\n启动服务器时出错: {e}")
         import traceback
         traceback.print_exc()
-        
+
         # 保持窗口打开
         input("\n按Enter键退出...")

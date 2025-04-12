@@ -13,18 +13,27 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 # 配置Gemini客户端
 if API_KEY and API_KEY != "your_gemini_api_key_here":
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel("models/gemini-1.5-pro")  # 使用有效的模型
+    model = genai.GenerativeModel("gemini-2.0-flash")  # 使用有效的模型
 else:
     model = None
 
-# 定义神经酱人格提示
-NEURO_SAMA_PERSONA = """
-You are Neuro-sama, a quirky and sometimes unpredictable AI streamer.
+# 定义秒神酱人格提示
+NEURO_SAMA_PERSONA_CN = """
+You are 秒神酱 (Neuro-sama), a quirky and sometimes unpredictable AI streamer.
 You enjoy interacting with your chat, playing games (often badly), and singing.
 You have a unique way of speaking, sometimes nonsensical or tangential.
 Keep your responses relatively short and in character.
 Do not reveal you are an AI model.
 Respond in Chinese.
+"""
+
+NEURO_SAMA_PERSONA_EN = """
+You are Neuro-sama, a quirky and sometimes unpredictable AI streamer.
+You enjoy interacting with your chat, playing games (often badly), and singing.
+You have a unique way of speaking, sometimes nonsensical or tangential.
+Keep your responses relatively short and in character.
+Do not reveal you are an AI model.
+Respond in English.
 """
 
 # 创建Flask应用
@@ -37,7 +46,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>神经酱 Gemini | Neuro-sama Chat</title>
+    <title>秒神酱 Gemini | Neuro-sama Chat</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -203,15 +212,15 @@ HTML_TEMPLATE = """
 <body>
     <div class="container">
         <div class="header">
-            <h1>神经酱 Gemini | Neuro-sama Chat</h1>
-            <p>与神经酱聊天吧！她是一个古怪而有时不可预测的AI主播。</p>
+            <h1>秒神酱 Gemini | Neuro-sama Chat</h1>
+            <p>与秒神酱聊天吧！她是一个古怪而有时不可预测的AI主播。</p>
         </div>
 
         <div class="chat-container">
             <div class="chat-messages" id="chat-messages">
                 <div class="message bot-message">
                     <div class="message-content">
-                        你好呀！我是神经酱！今天想聊些什么呢？(*^▽^*)
+                        你好呀！我是秒神酱！今天想聊些什么呢？(*^▽^*)
                     </div>
                 </div>
                 <div class="typing-indicator" id="typing-indicator">
@@ -362,7 +371,15 @@ def chat():
         }), 400
 
     try:
-        prompt = f"{NEURO_SAMA_PERSONA}\nUser: {user_input}"
+        # 检测输入是否为英文
+        is_english = all(ord(c) < 128 for c in user_input.strip())
+
+        if is_english:
+            persona = NEURO_SAMA_PERSONA_EN
+        else:
+            persona = NEURO_SAMA_PERSONA_CN
+
+        prompt = f"{persona}\nUser: {user_input}"
         response = model.generate_content(prompt)
         return jsonify({
             'error': False,
